@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinPal - AI Financial Advisor & Calculator</title>
+    
+    <!-- Tailwind CSS for Modern UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Blue-600
+                        secondary: '#10b981', // Emerald-500
+                        dark: '#0f172a', // Slate-900
+                        light: '#f8fafc', // Slate-50
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Markdown Parser for AI Responses -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Chart.js for SIP Visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .calc-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .calc-section.active { display: block; opacity: 1; animation: fadeIn 0.4s ease forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .markdown-content h1, .markdown-content h2, .markdown-content h3 { font-weight: 600; color: #0f172a; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .markdown-content h3 { font-size: 1.125rem; }
+        .markdown-content p { margin-bottom: 1rem; color: #334155; line-height: 1.6; }
+        .markdown-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #334155; }
+        .markdown-content strong { color: #0f172a; }
+
+        .skeleton {
+            background: #eee;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            border-radius: 5px;
+            background-size: 200% 100%;
+            animation: 1.5s shine linear infinite;
+        }
+        @keyframes shine { to { background-position-x: -200%; } }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-dark text-white flex flex-col h-full hidden md:flex z-20 shadow-xl">
+        <div class="p-6 flex items-center space-x-3 border-b border-slate-700">
+            <div class="bg-primary p-2 rounded-lg"><i data-lucide="wallet" class="text-white"></i></div>
+            <h1 class="text-2xl font-bold tracking-tight">FinPal</h1>
+        </div>
+        
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">Calculators</p>
+            <button onclick="switchTab('currency')" id="nav-currency" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl bg-primary text-white transition-all">
+                <i data-lucide="globe" class="w-5 h-5"></i><span class="font-medium">Currency</span>
+            </button>
+            <button onclick="switchTab('emi')" id="nav-emi" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition-all">
+                <i data-lucide="home" class="w-5 h-5"></i><span class="font-medium">EMI Calculator</span>
+            </button>
+            <button onclick="switchTab('gst')" id="nav-gst" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition-all">
+                <i data-lucide="calculator" class="w-5 h-5"></i><span class="font-medium">GST</span>
+            </button>
+            <button onclick="switchTab('sip')" id="nav-sip" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition-all">
+                <i data-lucide="trending-up" class="w-5 h-5"></i><span class="font-medium">SIP / Investment</span>
+            </button>
+
+            <div class="mt-8 mb-4 border-t border-slate-700 pt-6">
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">Intelligence</p>
+                <button onclick="switchTab('ai')" id="nav-ai" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 transition-all group">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-yellow-400 group-hover:animate-pulse"></i>
+                    <span class="font-medium">AI Advisor</span>
+                </button>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50 pt-16 md:pt-0">
+        <header class="bg-white shadow-sm px-8 py-5 flex justify-between items-center z-10 hidden md:flex">
+            <h2 id="page-title" class="text-2xl font-bold text-slate-800">Currency Converter</h2>
+            <div class="flex items-center space-x-4">
+                <span id="api-status" class="text-xs font-medium px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span> Rates Live
+                </span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div class="max-w-5xl mx-auto">
+
+                <!-- 1. CURRENCY CONVERTER -->
+                <section id="currency-calc" class="calc-section active">
+                    <div class="glass-card rounded-2xl p-6 md:p-8">
+                        <div class="mb-6"><h3 class="text-lg font-semibold text-slate-800">Real-time Exchange</h3></div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">Amount</label>
+                                <input type="number" id="curr-amount" value="100" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateCurrency()">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">From</label>
+                                <select id="curr-from" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" onchange="calculateCurrency()">
+                                    <option value="USD">USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="GBP">GBP - British Pound</option><option value="INR" selected>INR - Indian Rupee</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-2">To</label>
+                                <select id="curr-to" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" onchange="calculateCurrency()">
+                                    <option value="USD" selected>USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="GBP">GBP - British Pound</option><option value="INR">INR - Indian Rupee</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mt-8 p-6 bg-slate-50 rounded-xl border border-slate-100 flex flex-col items-center justify-center text-center">
+                            <p class="text-sm text-slate-500 mb-1">Converted Amount</p>
+                            <h2 id="curr-result" class="text-4xl font-bold text-primary">--</h2>
+                            <p id="curr-rate-info" class="text-xs text-slate-400 mt-2">Fetching live rates...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. EMI CALCULATOR -->
+                <section id="emi-calc" class="calc-section">
+                    <div class="glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-6">Loan EMI Calculator</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Loan Amount (₹)</label>
+                                    <input type="number" id="emi-amount" value="1000000" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateEMI()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Interest Rate (% p.a.)</label>
+                                    <input type="number" id="emi-rate" value="8.5" step="0.1" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateEMI()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Loan Tenure (Years)</label>
+                                    <input type="number" id="emi-tenure" value="10" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateEMI()">
+                                </div>
+                            </div>
+                            <div class="flex flex-col justify-center space-y-4">
+                                <div class="p-6 bg-primary/5 rounded-xl border border-primary/20 text-center">
+                                    <p class="text-sm text-slate-600 mb-1">Monthly EMI</p>
+                                    <h2 id="emi-result" class="text-3xl font-bold text-primary">₹0</h2>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                                        <p class="text-xs text-slate-500 mb-1">Total Interest</p>
+                                        <p id="emi-interest" class="text-lg font-semibold text-slate-800">₹0</p>
+                                    </div>
+                                    <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                                        <p class="text-xs text-slate-500 mb-1">Total Payment</p>
+                                        <p id="emi-total" class="text-lg font-semibold text-slate-800">₹0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. GST CALCULATOR -->
+                <section id="gst-calc" class="calc-section">
+                    <div class="glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-6">GST Calculator</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Initial Amount (₹)</label>
+                                    <input type="number" id="gst-amount" value="1000" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateGST()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">GST Rate (%)</label>
+                                    <div class="grid grid-cols-4 gap-2">
+                                        <button onclick="setGSTRate(5)" class="gst-btn py-2 border rounded-lg hover:bg-slate-50">5%</button>
+                                        <button onclick="setGSTRate(12)" class="gst-btn py-2 border rounded-lg hover:bg-slate-50">12%</button>
+                                        <button onclick="setGSTRate(18)" class="gst-btn py-2 border rounded-lg bg-primary text-white active-gst">18%</button>
+                                        <button onclick="setGSTRate(28)" class="gst-btn py-2 border rounded-lg hover:bg-slate-50">28%</button>
+                                    </div>
+                                    <input type="hidden" id="gst-rate" value="18">
+                                </div>
+                                <div class="flex items-center space-x-4">
+                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                        <input type="radio" name="gst-type" value="add" checked onchange="calculateGST()" class="text-primary focus:ring-primary">
+                                        <span class="text-sm">Add GST</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                        <input type="radio" name="gst-type" value="remove" onchange="calculateGST()" class="text-primary focus:ring-primary">
+                                        <span class="text-sm">Remove GST</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-slate-800 text-white rounded-xl shadow-inner flex flex-col justify-center">
+                                <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-600">
+                                    <span class="text-slate-300">Net Amount</span><span id="gst-net" class="font-semibold text-lg">₹1,000.00</span>
+                                </div>
+                                <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-600">
+                                    <span class="text-slate-300">GST Amount</span><span id="gst-tax" class="font-semibold text-lg text-yellow-400">₹180.00</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-300">Total Amount</span><span id="gst-total" class="font-bold text-2xl text-emerald-400">₹1,180.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. SIP CALCULATOR -->
+                <section id="sip-calc" class="calc-section">
+                    <div class="glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-6">SIP Calculator</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                            <div class="space-y-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Monthly Investment (₹)</label>
+                                    <input type="number" id="sip-amount" value="5000" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateSIP()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Expected Return Rate (% p.a)</label>
+                                    <input type="number" id="sip-rate" value="12" step="0.5" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateSIP()">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-2">Time Period (Years)</label>
+                                    <input type="number" id="sip-years" value="10" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary outline-none" oninput="calculateSIP()">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                                    <div><p class="text-xs text-slate-500 mb-1">Invested Amount</p><p id="sip-invested" class="font-semibold text-slate-800">₹6,00,000</p></div>
+                                    <div><p class="text-xs text-slate-500 mb-1">Est. Returns</p><p id="sip-returns" class="font-semibold text-emerald-600">₹5,61,695</p></div>
+                                </div>
+                                <div><p class="text-sm text-slate-500 mb-1">Total Value</p><p id="sip-total" class="text-2xl font-bold text-primary">₹11,61,695</p></div>
+                            </div>
+                            <div class="flex items-center justify-center bg-slate-50 rounded-xl p-4 border border-slate-100 min-h-[300px]">
+                                <canvas id="sipChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. AI FINANCIAL ADVISOR -->
+                <section id="ai-advisor" class="calc-section">
+                    <div class="glass-card rounded-2xl p-6 md:p-8 border-l-4 border-l-yellow-400">
+                        <div class="flex items-center space-x-3 mb-6">
+                            <div class="bg-yellow-100 p-2 rounded-full"><i data-lucide="sparkles" class="text-yellow-600 w-6 h-6"></i></div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-slate-800">FinPal AI Advisor</h3>
+                                <p class="text-sm text-slate-500">Powered by Gemini. Ask questions or get financial planning advice.</p>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <textarea id="ai-prompt" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-yellow-400 outline-none resize-none" placeholder="E.g., Explain how AI works in a few words"></textarea>
+                            
+                            <button id="ai-submit-btn" onclick="askAI()" class="w-full sm:w-auto px-6 py-3 bg-dark text-white rounded-xl font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20 flex items-center justify-center space-x-2">
+                                <span>Generate Advice</span><i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- Results Container -->
+                        <div id="ai-result-container" class="mt-8 hidden">
+                            <h4 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">AI Response</h4>
+                            <!-- Loader -->
+                            <div id="ai-loader" class="space-y-3 hidden">
+                                <div class="skeleton h-4 w-3/4"></div>
+                                <div class="skeleton h-4 w-full"></div>
+                                <div class="skeleton h-4 w-5/6"></div>
+                            </div>
+                            <!-- Markdown Output -->
+                            <div id="ai-response-text" class="markdown-content bg-white p-6 rounded-xl border border-slate-100 shadow-sm text-sm"></div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Application Logic -->
+    <script>
+        lucide.createIcons();
+
+        const formatINR = (num) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(num);
+
+        const sections = ['currency', 'emi', 'gst', 'sip', 'ai'];
+        const titles = { 'currency': 'Currency Converter', 'emi': 'EMI Calculator', 'gst': 'GST Calculator', 'sip': 'SIP Calculator', 'ai': 'AI Advisor' };
+
+        function switchTab(tabId) {
+            sections.forEach(id => {
+                document.getElementById(id === 'ai' ? 'ai-advisor' : `${id}-calc`)?.classList.remove('active');
+                const navBtn = document.getElementById(`nav-${id}`);
+                navBtn.classList.remove('bg-primary', 'text-white');
+                navBtn.classList.add('text-slate-300');
+            });
+
+            document.getElementById(tabId === 'ai' ? 'ai-advisor' : `${tabId}-calc`).classList.add('active');
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.remove('text-slate-300');
+            activeBtn.classList.add('bg-primary', 'text-white');
+            document.getElementById('page-title').innerText = titles[tabId];
+
+            if(tabId === 'sip') calculateSIP();
+        }
+
+        // Currency API
+        let exchangeRates = {};
+        async function fetchRates() {
+            try {
+                const res = await fetch('https://api.frankfurter.app/latest?from=USD');
+                const data = await res.json();
+                exchangeRates = data.rates;
+                exchangeRates['USD'] = 1; 
+                calculateCurrency();
+            } catch (error) {
+                exchangeRates = { 'INR': 83.2, 'EUR': 0.92, 'GBP': 0.79, 'USD': 1 };
+                calculateCurrency();
+            }
+        }
+
+        function calculateCurrency() {
+            if(Object.keys(exchangeRates).length === 0) return;
+            const amount = parseFloat(document.getElementById('curr-amount').value) || 0;
+            const from = document.getElementById('curr-from').value;
+            const to = document.getElementById('curr-to').value;
+            const finalAmount = (amount / exchangeRates[from]) * exchangeRates[to];
+            document.getElementById('curr-result').innerText = finalAmount.toFixed(2) + ' ' + to;
+            document.getElementById('curr-rate-info').innerText = `1 ${from} = ${(exchangeRates[to]/exchangeRates[from]).toFixed(4)} ${to}`;
+        }
+
+        // EMI Calc
+        function calculateEMI() {
+            const P = parseFloat(document.getElementById('emi-amount').value) || 0;
+            const R = parseFloat(document.getElementById('emi-rate').value) || 0;
+            const N = parseFloat(document.getElementById('emi-tenure').value) || 0;
+            if (P===0 || R===0 || N===0) return;
+            const r = R / 12 / 100, n = N * 12;
+            const emi = P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+            const totalPayment = emi * n;
+            document.getElementById('emi-result').innerText = formatINR(emi);
+            document.getElementById('emi-interest').innerText = formatINR(totalPayment - P);
+            document.getElementById('emi-total').innerText = formatINR(totalPayment);
+        }
+
+        // GST Calc
+        function setGSTRate(rate) {
+            document.getElementById('gst-rate').value = rate;
+            document.querySelectorAll('.gst-btn').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white', 'active-gst');
+            });
+            event.target.classList.add('bg-primary', 'text-white', 'active-gst');
+            calculateGST();
+        }
+
+        function calculateGST() {
+            const amount = parseFloat(document.getElementById('gst-amount').value) || 0;
+            const rate = parseFloat(document.getElementById('gst-rate').value);
+            const type = document.querySelector('input[name="gst-type"]:checked').value;
+            let net, tax, total;
+            if (type === 'add') {
+                net = amount; tax = (amount * rate) / 100; total = amount + tax;
+            } else {
+                total = amount; tax = amount - (amount * (100 / (100 + rate))); net = amount - tax;
+            }
+            document.getElementById('gst-net').innerText = formatINR(net);
+            document.getElementById('gst-tax').innerText = formatINR(tax);
+            document.getElementById('gst-total').innerText = formatINR(total);
+        }
+
+        // SIP Calc
+        let sipChartInstance = null;
+        function calculateSIP() {
+            const P = parseFloat(document.getElementById('sip-amount').value) || 0;
+            const R = parseFloat(document.getElementById('sip-rate').value) || 0;
+            const Y = parseFloat(document.getElementById('sip-years').value) || 0;
+            if (P===0 || R===0 || Y===0) return;
+            const i = R / 12 / 100, n = Y * 12;
+            const expectedAmount = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+            const amountInvested = P * n;
+            const estReturns = expectedAmount - amountInvested;
+            
+            document.getElementById('sip-invested').innerText = formatINR(amountInvested);
+            document.getElementById('sip-returns').innerText = formatINR(estReturns);
+            document.getElementById('sip-total').innerText = formatINR(expectedAmount);
+
+            const ctx = document.getElementById('sipChart').getContext('2d');
+            if (sipChartInstance) sipChartInstance.destroy();
+            sipChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Invested', 'Returns'],
+                    datasets: [{ data: [amountInvested, estReturns], backgroundColor: ['#94a3b8', '#10b981'], borderWidth: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+        }
+
+        // AI Advisor (Connected to your Flask Backend)
+        async function askAI() {
+            const prompt = document.getElementById('ai-prompt').value.trim();
+            if (!prompt) return;
+
+            const resultContainer = document.getElementById('ai-result-container');
+            const loader = document.getElementById('ai-loader');
+            const responseTextDiv = document.getElementById('ai-response-text');
+            const btn = document.getElementById('ai-submit-btn');
+
+            resultContainer.classList.remove('hidden');
+            loader.classList.remove('hidden');
+            responseTextDiv.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>Thinking...</span>';
+            lucide.createIcons();
+
+            try {
+                // Sending the POST request to your Flask backend server
+                const response = await fetch('/api/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                const data = await response.json();
+
+                loader.classList.add('hidden');
+                responseTextDiv.classList.remove('hidden');
+                
+                if (response.ok && data.text) {
+                    responseTextDiv.innerHTML = marked.parse(data.text);
+                } else {
+                    responseTextDiv.innerHTML = `<p class="text-red-500">${data.error || 'Unknown error occurred.'}</p>`;
+                }
+            } catch (error) {
+                loader.classList.add('hidden');
+                responseTextDiv.classList.remove('hidden');
+                responseTextDiv.innerHTML = `<p class="text-red-500">Failed to connect to the server. Make sure your Flask app is running.</p>`;
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<span>Generate Advice</span><i data-lucide="arrow-right" class="w-4 h-4"></i>';
+            lucide.createIcons();
+        }
+
+        window.onload = () => { fetchRates(); calculateEMI(); calculateGST(); calculateSIP(); };
+    </script>
+</body>
+</html>
