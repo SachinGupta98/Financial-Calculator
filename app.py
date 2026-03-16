@@ -24,6 +24,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_bcrypt import Bcrypt
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from datetime import datetime, timezone
 
 # Load environment variables from the .env file
@@ -61,6 +63,19 @@ login_manager.login_view = 'login'
 
 # ── Rate Limiter (brute-force protection) ────────────────────────────────────
 limiter = Limiter(get_remote_address, app=app, default_limits=[], storage_uri="memory://")
+
+# ── Flask-Mail (Gmail SMTP for password reset emails) ────────────────────────
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')   # your gmail address
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')   # gmail app password
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+mail = Mail(app)
+
+# Serializer for timed password-reset tokens (30-minute expiry)
+def get_reset_serializer():
+    return URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 # --- DATABASE MODELS ---
 
@@ -194,6 +209,96 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+# ── Forgot Password ───────────────────────────────────────────────────────────
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        user = User.query.filter_by(email=email).first()
+
+        # Always show success message (don't reveal if email exists)
+        if user:
+            try:
+                s = get_reset_serializer()
+                token = s.dumps(user.email, salt='password-reset')
+                reset_url = url_for('reset_password', token=token, _external=True)
+
+                msg = Message(
+                    subject='🔐 FinFlap — Reset Your Password',
+                    recipients=[user.email]
+                )
+                msg.html = f"""
+                <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;background:#0f172a;color:#e2e8f0;border-radius:16px;padding:32px;">
+                    <h2 style="color:#3b82f6;margin-top:0;">🐦 FinFlap Password Reset</h2>
+                    <p>Hi <strong>{user.username}</strong>,</p>
+                    <p>Someone requested a password reset for your FinFlap account.
+                       If this wasn't you, just ignore this email — your password won't change.</p>
+                    <p>Click the button below to reset your password. This link expires in <strong>30 minutes</strong>.</p>
+                    <a href="{reset_url}" style="display:inline-block;margin:16px 0;padding:14px 28px;background:#3b82f6;color:white;border-radius:10px;text-decoration:none;font-weight:bold;">
+                        Reset My Password
+                    </a>
+                    <p style="font-size:12px;color:#64748b;">Or copy this link:<br>{reset_url}</p>
+                    <hr style="border:none;border-top:1px solid #1e293b;margin:24px 0;">
+                    <p style="font-size:11px;color:#64748b;">FinFlap — Smart Finance Tracker</p>
+                </div>
+                """
+                mail.send(msg)
+                logger.info("Password reset email sent to %s", email)
+            except Exception as e:
+                logger.error("Failed to send reset email: %s", e)
+                flash('Could not send email. Please check mail configuration.', 'danger')
+                return render_template('forgot_password.html')
+
+        flash('If that email is registered, a reset link has been sent. Check your inbox (and spam)! 📬', 'success')
+        return redirect(url_for('forgot_password'))
+
+    return render_template('forgot_password.html')
+
+# ── Reset Password (from email link) ─────────────────────────────────────────
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    s = get_reset_serializer()
+    try:
+        email = s.loads(token, salt='password-reset', max_age=1800)  # 30 minutes
+    except SignatureExpired:
+        flash('That reset link has expired. Please request a new one.', 'danger')
+        return redirect(url_for('forgot_password'))
+    except BadSignature:
+        flash('That reset link is invalid. Please request a new one.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        new_password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if len(new_password) < 6:
+            flash('Password must be at least 6 characters.', 'danger')
+            return render_template('reset_password.html', token=token)
+
+        if new_password != confirm_password:
+            flash('Passwords do not match.', 'danger')
+            return render_template('reset_password.html', token=token)
+
+        user.password_hash = bcrypt.generate_password_hash(new_password).decode('utf-8')
+        db.session.commit()
+        logger.info("Password reset successful for user %s", user.email)
+        flash('Password reset successfully! You can now log in with your new password. 🎉', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html', token=token)
+
 
 # ── PWA static file routes (served from root for correct SW scope) ──
 @app.route('/manifest.json')
