@@ -64,13 +64,13 @@ login_manager.login_view = 'login'
 # ── Rate Limiter (brute-force protection) ────────────────────────────────────
 limiter = Limiter(get_remote_address, app=app, default_limits=[], storage_uri="memory://")
 
-# ── Flask-Mail (Gmail SMTP for password reset emails) ────────────────────────
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# ── Flask-Mail (Brevo SMTP for password reset emails) ──────────────────────
+app.config['MAIL_SERVER'] = 'smtp-relay.brevo.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')   # your gmail address
-app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')   # gmail app password
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_USERNAME'] = os.getenv('BREVO_USER')   # Brevo SMTP login
+app.config['MAIL_PASSWORD'] = os.getenv('BREVO_KEY')    # Brevo SMTP key
+app.config['MAIL_DEFAULT_SENDER'] = ('FinFlap', os.getenv('MAIL_FROM', os.getenv('BREVO_USER')))
 mail = Mail(app)
 
 # Serializer for timed password-reset tokens (30-minute expiry)
