@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinFlap — College Presentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:    #2563eb;
+      --blue-lt: #3b82f6;
+      --green:   #10b981;
+      --purple:  #7c3aed;
+      --amber:   #f59e0b;
+      --red:     #ef4444;
+      --bg:      #030712;
+      --bg2:     #0f172a;
+      --bg3:     #1e293b;
+      --border:  rgba(255,255,255,0.07);
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --slide-w: 1280px;
+      --slide-h: 720px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      overflow: hidden;
+    }
+
+    /* ── Slide Viewport ── */
+    #viewport {
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+
+    #slide-container {
+      width: var(--slide-w);
+      height: var(--slide-h);
+      position: relative;
+      overflow: hidden;
+      transform-origin: center center;
+    }
+
+    /* ── Individual Slides ── */
+    .slide {
+      position: absolute; inset: 0;
+      background: var(--bg);
+      color: var(--text);
+      display: flex; flex-direction: column;
+      padding: 60px 72px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      transform: translateX(60px);
+    }
+    .slide.active {
+      opacity: 1; pointer-events: auto; transform: translateX(0);
+    }
+    .slide.exit-left {
+      opacity: 0; transform: translateX(-60px);
+    }
+
+    /* ── Animated blobs background ── */
+    .blobs {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(100px); opacity: 0.12;
+      animation: float 8s ease-in-out infinite;
+    }
+    .blob-blue  { width: 520px; height: 520px; background: var(--blue);   top: -200px; left: -100px; }
+    .blob-purple{ width: 420px; height: 420px; background: var(--purple); top: 100px;  right: -120px; animation-delay: -3s; }
+    .blob-green { width: 360px; height: 360px; background: var(--green);  bottom: -120px; left: 30%; animation-delay: -6s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-28px) scale(1.04); }
+    }
+
+    .slide-content { position: relative; z-index: 1; display: flex; flex-direction: column; height: 100%; }
+
+    /* ── Slide Label ── */
+    .slide-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--blue-lt);
+      margin-bottom: 18px;
+    }
+
+    /* ── Typography ── */
+    h1.hero-title {
+      font-size: 80px; font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, #fff 40%, var(--blue-lt));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    h2.section-title {
+      font-size: 42px; font-weight: 800; line-height: 1.15;
+      color: #fff; margin-bottom: 10px;
+    }
+    h2.section-title span { color: var(--blue-lt); }
+    .subtitle {
+      font-size: 19px; color: var(--muted); line-height: 1.6; max-width: 700px;
+    }
+
+    /* ── Cards ── */
+    .card-grid { display: grid; gap: 16px; }
+    .card {
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      backdrop-filter: blur(6px);
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: rgba(59,130,246,0.4); }
+    .card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 12px;
+    }
+    .card h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .card p  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── Pills / Tags ── */
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 999px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    }
+    .tag-blue   { background: rgba(37,99,235,0.2);  color: #93c5fd; border: 1px solid rgba(37,99,235,0.35); }
+    .tag-green  { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.35); }
+    .tag-purple { background: rgba(124,58,237,0.2); color: #c4b5fd; border: 1px solid rgba(124,58,237,0.35); }
+    .tag-amber  { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.35); }
+    .tag-red    { background: rgba(239,68,68,0.2);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.35); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px; background: var(--border); margin: 20px 0;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--blue-lt));
+    }
+
+    /* ── Nav Controls ── */
+    #controls {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 16px;
+      background: rgba(15,23,42,0.85);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      padding: 10px 20px;
+      z-index: 100;
+    }
+    .btn-nav {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: #fff; cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-nav:hover { background: var(--blue); }
+    .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+    #slide-counter { font-size: 13px; color: var(--muted); font-weight: 500; min-width: 60px; text-align: center; }
+
+    /* ── Slide-specific helpers ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .four-col  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    .number-big {
+      font-size: 48px; font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, var(--blue-lt), var(--green));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+    /* ── Tech Stack icons ── */
+    .tech-item {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 18px 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+    }
+    .tech-item .icon { font-size: 28px; }
+
+    /* ── Timeline (Architecture) ── */
+    .timeline { display: flex; align-items: center; gap: 0; }
+    .tl-step {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      position: relative;
+    }
+    .tl-step::after {
+      content: '→'; position: absolute; right: -18px; top: 22px;
+      font-size: 22px; color: var(--blue-lt);
+    }
+    .tl-step:last-child::after { display: none; }
+    .tl-circle {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 10px;
+      border: 2px solid rgba(59,130,246,0.5);
+      background: rgba(37,99,235,0.15);
+    }
+    .tl-label { font-size: 12px; font-weight: 600; color: #fff; text-align: center; }
+    .tl-sub   { font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+    /* ── Highlight box ── */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(124,58,237,0.1));
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 16px;
+      padding: 24px 28px;
+    }
+
+    /* ── Quote style ── */
+    .quote {
+      font-size: 22px; font-weight: 300; color: var(--text);
+      line-height: 1.7; letter-spacing: -0.01em;
+      padding-left: 20px;
+      border-left: 3px solid var(--blue-lt);
+    }
+
+    /* ── Footer on slide ── */
+    .slide-footer {
+      margin-top: auto;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: rgba(148,163,184,0.5);
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Responsive scaling ── */
+    @media (max-width: 1340px) {
+      #slide-container { transform: scale(0.9); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="slide-container">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 1 — Title
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide active" id="s1">
+      <div class="blobs">
+        <div class="blob blob-blue"></div>
+        <div class="blob blob-purple"></div>
+        <div class="blob blob-green"></div>
+      </div>
+      <div class="slide-content" style="justify-content:center; gap:24px;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+          <div style="width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;">🐦</div>
+          <span style="font-size:18px;font-weight:700;color:var(--blue-lt);letter-spacing:0.04em;">FINFLAP</span>
+        </div>
+        <h1 class="hero-title">Smart Finance<br/>for Every Indian</h1>
+        <p class="subtitle" style="max-width:600px; font-size:20px;">
+          An AI-powered personal finance management web application — track expenses, plan investments, and achieve your financial goals.
+        </p>
+        <div class="pill-row" style="margin-top:16px;">
+          <span class="tag tag-blue">🤖 AI Financial Advisor</span>
+          <span class="tag tag-green">📊 Smart Calculators</span>
+          <span class="tag tag-purple">🔒 Secure &amp; Private</span>
+          <span class="tag tag-amber">📱 Progressive Web App</span>
+        </div>
+        <div class="divider" style="margin-top:32px;"></div>
+        <div style="display:flex; gap:48px; align-items:center;">
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">Course Project</div>
+            <div style="font-size:15px;font-weight:600;color:#fff;margin-top:3px;">B.Tech — Computer Science</div>
+          </div>
+          <div style="width:1px;height:36px;background:var(--border);"></div>
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">Stack</div>
+            <div style="font-size:15px;font-weight:600;color:#fff;margin-top:3px;">Flask · Python · Tailwind CSS</div>
+          </div>
+          <div style="width:1px;height:36px;background:var(--border);"></div>
+          <div>
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);">Platform</div>
+            <div style="font-size:15px;font-weight:600;color:#fff;margin-top:3px;">Web + PWA (Mobile Ready)</div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span>FinFlap — College Presentation</span>
+        <span>Use arrow keys or buttons to navigate</span>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 2 — Problem Statement
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s2">
+      <div class="blobs">
+        <div class="blob blob-blue" style="opacity:0.08;"></div>
+        <div class="blob blob-purple" style="opacity:0.06;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">01 — Problem Statement</div>
+        <h2 class="section-title">Why Does <span>Personal Finance</span><br/>Feel So Hard?</h2>
+        <p class="subtitle" style="margin-bottom:28px;">Millions of Indians lack accessible, India-specific financial tools in one place.</p>
+
+        <div class="two-col" style="flex:1; align-items:start;">
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div class="card">
+              <div style="display:flex;gap:14px;align-items:flex-start;">
+                <span style="font-size:28px;">😕</span>
+                <div>
+                  <h3>No Single Platform</h3>
+                  <p>Users switch between multiple apps — one for expenses, one for EMI, one for taxes. No unified view of personal finances.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div style="display:flex;gap:14px;align-items:flex-start;">
+                <span style="font-size:28px;">🌍</span>
+                <div>
+                  <h3>Not India-Specific</h3>
+                  <p>Most finance apps are built for Western markets. No Indian Income Tax slabs, no ₹ currency focus, no SIP/EPF calculators.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div style="display:flex;gap:14px;align-items:flex-start;">
+                <span style="font-size:28px;">🤯</span>
+                <div>
+                  <h3>Complex &amp; Intimidating</h3>
+                  <p>Existing tools are either too basic or too complex. There's no smart assistant to guide first-time investors.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="highlight-box" style="height:100%; display:flex; flex-direction:column; justify-content:center; gap:24px;">
+            <div style="text-align:center;">
+              <div class="number-big">77%</div>
+              <div style="font-size:14px;color:var(--muted);margin-top:6px;">of Indians have no structured financial plan <span style="font-size:11px;opacity:0.6;">(NCFE Financial Literacy Survey)</span></div>
+            </div>
+            <div class="divider"></div>
+            <div style="text-align:center;">
+              <div class="number-big">₹1.4T</div>
+              <div style="font-size:14px;color:var(--muted);margin-top:6px;">estimated annual cost of poor household financial decisions <span style="font-size:11px;opacity:0.6;">(RBI Household Finance Report)</span></div>
+            </div>
+            <div class="divider"></div>
+            <blockquote class="quote" style="font-size:15px;">
+              "The real problem isn't earning money — it's knowing where it goes."
+            </blockquote>
+          </div>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 2 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 3 — Project Overview / Solution
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s3">
+      <div class="blobs">
+        <div class="blob blob-green" style="opacity:0.09;width:400px;height:400px;top:-100px;left:-80px;"></div>
+        <div class="blob blob-blue"  style="opacity:0.07;bottom:-80px;right:-60px;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">02 — Our Solution</div>
+        <h2 class="section-title">Introducing <span>FinFlap</span></h2>
+        <p class="subtitle" style="margin-bottom:28px;">A comprehensive, India-first financial companion — all your money tools in one clean, intelligent web app.</p>
+
+        <div class="four-col" style="flex:1; align-items:stretch;">
+          <div class="card" style="border-top:3px solid var(--blue);">
+            <div class="card-icon" style="background:rgba(37,99,235,0.15);">📊</div>
+            <h3>Smart Calculators</h3>
+            <p>EMI, SIP, Income Tax (Indian slabs), Retirement, and Compound Interest calculators built for real-life use.</p>
+          </div>
+          <div class="card" style="border-top:3px solid var(--green);">
+            <div class="card-icon" style="background:rgba(16,185,129,0.15);">💼</div>
+            <h3>Expense Tracking</h3>
+            <p>Log, categorize and visualize every rupee spent. Set budgets, alerts, and recurring bills automatically.</p>
+          </div>
+          <div class="card" style="border-top:3px solid var(--purple);">
+            <div class="card-icon" style="background:rgba(124,58,237,0.15);">🤖</div>
+            <h3>AI Financial Advisor</h3>
+            <p>Powered by Groq LLM. Get instant, personalized financial advice — investment tips, budgeting strategies, tax planning.</p>
+          </div>
+          <div class="card" style="border-top:3px solid var(--amber);">
+            <div class="card-icon" style="background:rgba(245,158,11,0.15);">🎯</div>
+            <h3>Goal &amp; Portfolio</h3>
+            <p>Set savings goals with deadlines, track asset portfolios (stocks, mutual funds, gold), and monitor progress.</p>
+          </div>
+        </div>
+
+        <div class="pill-row" style="margin-top:20px;">
+          <span class="tag tag-blue">📄 OCR Receipt Scanner</span>
+          <span class="tag tag-green">📤 Export to Excel / CSV / PDF</span>
+          <span class="tag tag-purple">🔔 Smart Notifications</span>
+          <span class="tag tag-amber">📱 Install as Mobile App (PWA)</span>
+          <span class="tag tag-red">🔒 Brute-Force Protected Login</span>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 3 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 4 — Key Features (Detailed)
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s4">
+      <div class="blobs">
+        <div class="blob blob-purple" style="opacity:0.09;"></div>
+        <div class="blob blob-blue"   style="opacity:0.07;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">03 — Features Deep Dive</div>
+        <h2 class="section-title">What Can <span>FinFlap</span> Do?</h2>
+
+        <div class="two-col" style="flex:1; gap:18px; margin-top:18px;">
+          <!-- Left column -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="font-size:26px; min-width:40px;">🧮</div>
+              <div>
+                <h3>5 Financial Calculators</h3>
+                <p>EMI (with amortization schedule), SIP returns, India Income Tax (Old &amp; New regime), Retirement Corpus, Compound Interest — all with interactive charts.</p>
+              </div>
+            </div>
+
+            <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="font-size:26px; min-width:40px;">📷</div>
+              <div>
+                <h3>OCR Receipt Scanner</h3>
+                <p>Snap a photo of any receipt or bill. FinFlap uses Tesseract OCR + PIL image enhancement to auto-extract the amount — no manual entry needed.</p>
+              </div>
+            </div>
+
+            <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="font-size:26px; min-width:40px;">🔁</div>
+              <div>
+                <h3>Recurring Expenses</h3>
+                <p>Register fixed monthly costs (rent, subscriptions, EMIs). FinFlap auto-logs them and alerts you when they're due — no more missed entries.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right column -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="font-size:26px; min-width:40px;">📊</div>
+              <div>
+                <h3>Visual Analytics</h3>
+                <p>Category-wise pie charts, monthly spending bars, portfolio gain/loss — powered by Chart.js with dark-mode-optimized design.</p>
+              </div>
+            </div>
+
+            <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="font-size:26px; min-width:40px;">🏆</div>
+              <div>
+                <h3>Smart Notifications</h3>
+                <p>Real-time contextual alerts: budget warnings, goal milestones, portfolio performance, zero-spend day streaks, overdue recurring bills.</p>
+              </div>
+            </div>
+
+            <div class="card" style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="font-size:26px; min-width:40px;">📤</div>
+              <div>
+                <h3>Multi-format Export</h3>
+                <p>Export any data to Excel (.xlsx with styled headers), CSV, or PDF — great for tax filing, CA consultations, or personal records.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 4 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 5 — Tech Stack
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s5">
+      <div class="blobs">
+        <div class="blob blob-blue" style="opacity:0.08;width:480px;height:480px;"></div>
+        <div class="blob blob-green" style="opacity:0.07;right:-60px;bottom:-60px;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">04 — Technology Stack</div>
+        <h2 class="section-title">Built with <span>Modern Technologies</span></h2>
+        <p class="subtitle" style="margin-bottom:28px;">Production-grade stack designed for performance, scalability, and developer experience.</p>
+
+        <div style="display:grid; grid-template-columns: repeat(5,1fr); gap:14px; flex:1; align-items:start;">
+          <div class="tech-item" style="border-color:rgba(16,185,129,0.3);">
+            <span class="icon">🐍</span>
+            <span>Python 3.x</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(37,99,235,0.3);">
+            <span class="icon">🌶️</span>
+            <span>Flask 3.0</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(124,58,237,0.3);">
+            <span class="icon">🗄️</span>
+            <span>SQLAlchemy</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(245,158,11,0.3);">
+            <span class="icon">🐘</span>
+            <span>PostgreSQL</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(239,68,68,0.3);">
+            <span class="icon">🦭</span>
+            <span>SQLite (dev)</span>
+          </div>
+
+          <div class="tech-item" style="border-color:rgba(6,182,212,0.3);">
+            <span class="icon">🎨</span>
+            <span>Tailwind CSS</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(249,115,22,0.3);">
+            <span class="icon">📈</span>
+            <span>Chart.js</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(16,185,129,0.3);">
+            <span class="icon">⚡</span>
+            <span>Lucide Icons</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(37,99,235,0.3);">
+            <span class="icon">📄</span>
+            <span>jsPDF</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(124,58,237,0.3);">
+            <span class="icon">✍️</span>
+            <span>Marked.js</span>
+          </div>
+
+          <div class="tech-item" style="border-color:rgba(245,158,11,0.3);">
+            <span class="icon">🤖</span>
+            <span>Groq LLM API</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(239,68,68,0.3);">
+            <span class="icon">🔐</span>
+            <span>Flask-Bcrypt</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(16,185,129,0.3);">
+            <span class="icon">🛡️</span>
+            <span>Flask-Limiter</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(6,182,212,0.3);">
+            <span class="icon">📧</span>
+            <span>Flask-Mail</span>
+          </div>
+          <div class="tech-item" style="border-color:rgba(37,99,235,0.3);">
+            <span class="icon">📱</span>
+            <span>PWA / SW</span>
+          </div>
+        </div>
+
+        <div class="pill-row" style="margin-top:20px;">
+          <span class="tag tag-green">Deployed on Render (PaaS)</span>
+          <span class="tag tag-blue">Gunicorn WSGI Server</span>
+          <span class="tag tag-purple">Brevo SMTP for Emails</span>
+          <span class="tag tag-amber">OpenPyXL for Excel Export</span>
+          <span class="tag tag-red">Tesseract OCR for Receipts</span>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 5 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 6 — System Architecture
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s6">
+      <div class="blobs">
+        <div class="blob blob-purple" style="opacity:0.08;"></div>
+        <div class="blob blob-blue"   style="opacity:0.06;bottom:-60px;right:0;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">05 — System Architecture</div>
+        <h2 class="section-title">How It All <span>Works Together</span></h2>
+        <p class="subtitle" style="margin-bottom:24px;">A clean, layered MVC-style architecture with a RESTful JSON API.</p>
+
+        <!-- Flow diagram -->
+        <div style="background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:16px;padding:28px 36px;flex:1;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+
+          <div class="timeline">
+            <div class="tl-step">
+              <div class="tl-circle">🌐</div>
+              <div class="tl-label">Browser / PWA</div>
+              <div class="tl-sub">Tailwind CSS + JS<br/>Chart.js, jsPDF</div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-circle">🌶️</div>
+              <div class="tl-label">Flask Routes</div>
+              <div class="tl-sub">Auth, REST API<br/>Session Mgmt</div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-circle">⚙️</div>
+              <div class="tl-label">Business Logic</div>
+              <div class="tl-sub">Calculators, OCR<br/>Notifications</div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-circle">🗄️</div>
+              <div class="tl-label">SQLAlchemy ORM</div>
+              <div class="tl-sub">Models: User, Expense<br/>Goal, Asset, Settings</div>
+            </div>
+            <div class="tl-step">
+              <div class="tl-circle">🐘</div>
+              <div class="tl-label">PostgreSQL</div>
+              <div class="tl-sub">Production DB<br/>SQLite for dev</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <div style="padding:16px 20px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:12px;">
+              <div style="font-size:13px;font-weight:700;color:#93c5fd;margin-bottom:6px;">🔐 Security Layer</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.7;">Bcrypt password hashing · Flask-Login sessions · Rate limiting (10 req/min) · CSRF-safe tokens · Timed reset links (30 min)</div>
+            </div>
+            <div style="padding:16px 20px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:12px;">
+              <div style="font-size:13px;font-weight:700;color:#6ee7b7;margin-bottom:6px;">🤖 AI Layer</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.7;">Groq LLM API integration · Context-aware prompts · Markdown rendering · Streaming responses · Retry with timeout protection</div>
+            </div>
+            <div style="padding:16px 20px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);border-radius:12px;">
+              <div style="font-size:13px;font-weight:700;color:#c4b5fd;margin-bottom:6px;">📱 PWA Layer</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.7;">Service Worker caching · Web App Manifest · Home-screen install · Offline fallback · Apple &amp; Android support</div>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 6 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 7 — Database Design
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s7">
+      <div class="blobs">
+        <div class="blob blob-blue" style="opacity:0.08;"></div>
+        <div class="blob blob-amber" style="background:var(--amber);opacity:0.06;bottom:-60px;left:30%;width:300px;height:300px;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">06 — Database Design</div>
+        <h2 class="section-title">Data <span>Models</span></h2>
+        <p class="subtitle" style="margin-bottom:20px;">Relational schema with 7 tables, all linked to a central User model via foreign keys.</p>
+
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;flex:1;align-items:start;">
+
+          <!-- Central user card -->
+          <div style="border:2px solid rgba(59,130,246,0.5);border-radius:14px;background:rgba(37,99,235,0.12);padding:20px;">
+            <div style="font-size:13px;font-weight:800;color:#93c5fd;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">👤 User (Central)</div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--muted);font-family:monospace;">
+              <span>🔑 id (PK)</span>
+              <span>📝 username (unique)</span>
+              <span>✉️ email (unique)</span>
+              <span>🔐 password_hash</span>
+              <span>🕒 created_at</span>
+            </div>
+            <div class="divider" style="margin:14px 0;"></div>
+            <div style="font-size:11px;color:var(--blue-lt);">One-to-many → all tables below</div>
+          </div>
+
+          <!-- Related tables grid -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+            <div class="card" style="padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:8px;">💰 Expense</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:monospace;">description<br/>amount · date<br/>category</div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:#c4b5fd;margin-bottom:8px;">🎯 Goal</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:monospace;">name · target_amount<br/>saved_amount<br/>target_date · category</div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:#fcd34d;margin-bottom:8px;">📈 Asset</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:monospace;">name · asset_type<br/>invested_amount<br/>current_value</div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:#fca5a5;margin-bottom:8px;">⚙️ Settings</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:monospace;">monthly_income<br/>monthly_budget</div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:#93c5fd;margin-bottom:8px;">🏷️ CustomCategory</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:monospace;">name · emoji<br/>color</div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <div style="font-size:12px;font-weight:700;color:#6ee7b7;margin-bottom:8px;">🔁 Recurring Expense</div>
+              <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:monospace;">description · amount<br/>day_of_month<br/>last_logged</div>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 7 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 8 — Security & Reliability
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s8">
+      <div class="blobs">
+        <div class="blob blob-green" style="opacity:0.09;width:380px;height:380px;top:-80px;right:0;"></div>
+        <div class="blob blob-blue" style="opacity:0.07;bottom:-60px;left:0;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">07 — Security &amp; Reliability</div>
+        <h2 class="section-title">Production-Grade <span>Security</span></h2>
+        <p class="subtitle" style="margin-bottom:24px;">FinFlap is built with security-first principles — no shortcuts taken.</p>
+
+        <div class="three-col" style="flex:1; align-items:start;">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card" style="border-left:3px solid var(--green);">
+              <h3>🔐 Bcrypt Password Hashing</h3>
+              <p>Passwords are never stored in plaintext. Industry-standard bcrypt algorithm with adaptive cost factor.</p>
+            </div>
+            <div class="card" style="border-left:3px solid var(--green);">
+              <h3>⏱️ Timed Reset Tokens</h3>
+              <p>Password reset links generated with itsdangerous URLSafeTimedSerializer expire after 30 minutes automatically.</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card" style="border-left:3px solid var(--blue-lt);">
+              <h3>🛡️ Brute-Force Protection</h3>
+              <p>Flask-Limiter enforces 10 login attempts per minute per IP. Exceeding the limit returns HTTP 429.</p>
+            </div>
+            <div class="card" style="border-left:3px solid var(--blue-lt);">
+              <h3>🔑 SECRET_KEY Enforcement</h3>
+              <p>App raises a RuntimeError at startup if SECRET_KEY is missing — preventing accidental insecure deployments.</p>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card" style="border-left:3px solid var(--purple);">
+              <h3>📤 File Upload Safety</h3>
+              <p>All file uploads (OCR receipts) are capped at 5 MB via Flask's MAX_CONTENT_LENGTH to prevent DoS attacks.</p>
+            </div>
+            <div class="card" style="border-left:3px solid var(--purple);">
+              <h3>👤 User Isolation</h3>
+              <p>All API endpoints check current_user with @login_required. Users can only access their own data — no cross-account leakage.</p>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 8 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 9 — Future Scope
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s9">
+      <div class="blobs">
+        <div class="blob blob-purple" style="opacity:0.1;"></div>
+        <div class="blob blob-blue"   style="opacity:0.07;bottom:-60px;right:0;"></div>
+      </div>
+      <div class="slide-content">
+        <div class="slide-label">08 — Future Scope</div>
+        <h2 class="section-title">What's <span>Next</span> for FinFlap?</h2>
+        <p class="subtitle" style="margin-bottom:26px;">Exciting enhancements planned to make FinFlap the #1 personal finance tool for India.</p>
+
+        <div class="two-col" style="flex:1; align-items:start; gap:20px;">
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div class="card" style="display:flex;gap:14px;align-items:center;">
+              <span style="font-size:24px;min-width:36px;">🏦</span>
+              <div><h3>UPI / Bank Integration</h3><p>Auto-import transactions from UPI apps and bank statements using open banking APIs or PDF parsers.</p></div>
+            </div>
+            <div class="card" style="display:flex;gap:14px;align-items:center;">
+              <span style="font-size:24px;min-width:36px;">🤖</span>
+              <div><h3>Predictive AI Budgeting</h3><p>ML model to predict next month's spending based on historical patterns and suggest proactive savings cuts.</p></div>
+            </div>
+            <div class="card" style="display:flex;gap:14px;align-items:center;">
+              <span style="font-size:24px;min-width:36px;">📊</span>
+              <div><h3>Live Stock / MF Prices</h3><p>Real-time portfolio valuation by integrating BSE/NSE or mutual fund NAV APIs automatically.</p></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div class="card" style="display:flex;gap:14px;align-items:center;">
+              <span style="font-size:24px;min-width:36px;">📱</span>
+              <div><h3>Native Mobile App</h3><p>React Native / Flutter wrapper around the existing API for a fully native iOS and Android experience with push notifications.</p></div>
+            </div>
+            <div class="card" style="display:flex;gap:14px;align-items:center;">
+              <span style="font-size:24px;min-width:36px;">👥</span>
+              <div><h3>Family / Group Budgets</h3><p>Shared household budgets, split expense tracking for families or roommates — with role-based access.</p></div>
+            </div>
+            <div class="card" style="display:flex;gap:14px;align-items:center;">
+              <span style="font-size:24px;min-width:36px;">🌐</span>
+              <div><h3>Multi-Currency Support</h3><p>Expand beyond ₹ INR — support for NRI users tracking finances across multiple countries and currencies.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>FinFlap</span><span>Slide 9 / 10</span></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         SLIDE 10 — Thank You / Conclusion
+    ══════════════════════════════════════════════════════════════ -->
+    <section class="slide" id="s10">
+      <div class="blobs">
+        <div class="blob blob-blue"   style="opacity:0.14; top:-100px; left:-80px;"></div>
+        <div class="blob blob-purple" style="opacity:0.12; top:80px; right:-80px;"></div>
+        <div class="blob blob-green"  style="opacity:0.08; bottom:-80px; left:25%;"></div>
+      </div>
+      <div class="slide-content" style="justify-content:center; align-items:center; text-align:center; gap:28px;">
+
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,#2563eb,#7c3aed);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;box-shadow:0 0 40px rgba(37,99,235,0.4);">🐦</div>
+
+        <div>
+          <h1 class="hero-title" style="font-size:64px;">Thank You!</h1>
+          <p style="font-size:20px;color:var(--muted);margin-top:10px;">FinFlap — Smart Finance for Every Indian</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:840px;">
+          <div style="padding:20px 16px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:14px;">
+            <div class="number-big" style="font-size:36px;">5+</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">Financial Calculators</div>
+          </div>
+          <div style="padding:20px 16px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:14px;">
+            <div class="number-big" style="font-size:36px;background:linear-gradient(135deg,var(--green),#34d399);-webkit-background-clip:text;background-clip:text;">7</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">Database Models</div>
+          </div>
+          <div style="padding:20px 16px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.25);border-radius:14px;">
+            <div class="number-big" style="font-size:36px;background:linear-gradient(135deg,var(--purple),#a78bfa);-webkit-background-clip:text;background-clip:text;">15+</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">Technologies Used</div>
+          </div>
+          <div style="padding:20px 16px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:14px;">
+            <div class="number-big" style="font-size:36px;background:linear-gradient(135deg,var(--amber),#fbbf24);-webkit-background-clip:text;background-clip:text;">∞</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">Financial Goals Possible</div>
+          </div>
+        </div>
+
+        <blockquote class="quote" style="max-width:640px;font-size:18px;text-align:left;">
+          "FinFlap is not just a calculator — it's a financial companion that grows with you."
+        </blockquote>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+          <span class="tag tag-blue">🌐 Flask + Python Backend</span>
+          <span class="tag tag-green">🎨 Tailwind CSS Frontend</span>
+          <span class="tag tag-purple">🤖 Groq AI Integration</span>
+          <span class="tag tag-amber">📱 PWA Mobile Support</span>
+        </div>
+
+        <div style="font-size:13px;color:rgba(148,163,184,0.4);margin-top:8px;">
+          Questions? We'd love to answer them! 🙌
+        </div>
+      </div>
+    </section>
+
+  </div><!-- end slide-container -->
+</div><!-- end viewport -->
+
+<!-- ── Navigation Controls ── -->
+<div id="controls">
+  <button class="btn-nav" id="btn-prev" onclick="prevSlide()" disabled>&#8592;</button>
+  <span id="slide-counter">1 / 10</span>
+  <button class="btn-nav" id="btn-next" onclick="nextSlide()">&#8594;</button>
+</div>
+
+<script>
+  const TOTAL = 10;
+  let current = 1;
+
+  function scale() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const root = document.documentElement;
+    const sw = parseInt(getComputedStyle(root).getPropertyValue('--slide-w')) || 1280;
+    const sh = parseInt(getComputedStyle(root).getPropertyValue('--slide-h')) || 720;
+    const s = Math.min(vw / sw, vh / sh);
+    document.getElementById('slide-container').style.transform = `scale(${s})`;
+  }
+  window.addEventListener('resize', scale);
+  scale();
+
+  function goTo(n) {
+    const prev = document.getElementById(`s${current}`);
+    prev.classList.remove('active');
+    prev.classList.add('exit-left');
+    setTimeout(() => prev.classList.remove('exit-left'), 450);
+
+    current = n;
+    const next = document.getElementById(`s${current}`);
+    next.classList.add('active');
+
+    document.getElementById('slide-counter').textContent = `${current} / ${TOTAL}`;
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === TOTAL;
+  }
+
+  function nextSlide() { if (current < TOTAL) goTo(current + 1); }
+  function prevSlide() { if (current > 1)     goTo(current - 1); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  prevSlide();
+  });
+
+  // Touch / swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.changedTouches[0].clientX; });
+  document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (dx < -50) nextSlide();
+    if (dx >  50) prevSlide();
+  });
+</script>
+</body>
+</html>
