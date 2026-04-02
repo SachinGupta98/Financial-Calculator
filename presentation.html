@@ -354,12 +354,12 @@
           <div class="highlight-box" style="height:100%; display:flex; flex-direction:column; justify-content:center; gap:24px;">
             <div style="text-align:center;">
               <div class="number-big">77%</div>
-              <div style="font-size:14px;color:var(--muted);margin-top:6px;">of Indians have no structured financial plan</div>
+              <div style="font-size:14px;color:var(--muted);margin-top:6px;">of Indians have no structured financial plan <span style="font-size:11px;opacity:0.6;">(NCFE Financial Literacy Survey)</span></div>
             </div>
             <div class="divider"></div>
             <div style="text-align:center;">
               <div class="number-big">₹1.4T</div>
-              <div style="font-size:14px;color:var(--muted);margin-top:6px;">lost annually due to poor financial decisions</div>
+              <div style="font-size:14px;color:var(--muted);margin-top:6px;">estimated annual cost of poor household financial decisions <span style="font-size:11px;opacity:0.6;">(RBI Household Finance Report)</span></div>
             </div>
             <div class="divider"></div>
             <blockquote class="quote" style="font-size:15px;">
@@ -874,7 +874,9 @@
 
   function scale() {
     const vw = window.innerWidth, vh = window.innerHeight;
-    const sw = 1280, sh = 720;
+    const root = document.documentElement;
+    const sw = parseInt(getComputedStyle(root).getPropertyValue('--slide-w')) || 1280;
+    const sh = parseInt(getComputedStyle(root).getPropertyValue('--slide-h')) || 720;
     const s = Math.min(vw / sw, vh / sh);
     document.getElementById('slide-container').style.transform = `scale(${s})`;
   }
@@ -900,8 +902,8 @@
   function prevSlide() { if (current > 1)     goTo(current - 1); }
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown'  || e.key === ' ') nextSlide();
-    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                      prevSlide();
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  prevSlide();
   });
 
   // Touch / swipe
