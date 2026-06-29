@@ -1,0 +1,57 @@
+{
+    "name": "FinFlap - Smart Finance",
+    "short_name": "FinFlap",
+    "description": "Your AI-powered personal finance companion for India",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#111827",
+    "theme_color": "#2563eb",
+    "lang": "en-IN",
+    "categories": [
+        "finance",
+        "productivity"
+    ],
+    "icons": [
+        {
+            "src": "/static/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Add Expense",
+            "short_name": "Expense",
+            "description": "Quickly log a new expense",
+            "url": "/?view=expense",
+            "icons": [
+                {
+                    "src": "/static/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Portfolio",
+            "short_name": "Portfolio",
+            "description": "View your portfolio",
+            "url": "/?view=portfolio",
+            "icons": [
+                {
+                    "src": "/static/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ]
+}

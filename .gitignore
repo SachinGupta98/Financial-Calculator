@@ -1,0 +1,41 @@
+# === Python ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# === Virtual Environment ===
+.venv/
+venv/
+env/
+
+# === Environment Variables (NEVER commit this!) ===
+.env
+
+# === Database files (use PostgreSQL in production) ===
+*.db
+*.sqlite3
+instance/
+
+# === Migration scripts (one-time use, optional to commit) ===
+migrate_data.py
+
+# === Dev utilities ===
+check_html.py
+test_*.js
+test_*.py
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo

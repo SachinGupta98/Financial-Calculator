@@ -1,0 +1,411 @@
+/* ═══════════════════════════════════════════════════
+   FinFlap — Global Styles (Dark default + Light theme)
+   Light palette: #F2EAE0 · #B4D3D9 · #BDA6CE · #9B8EC7
+   ═══════════════════════════════════════════════════ */
+
+/* ── Shared base ────────────────────────────────────────── */
+body { font-family: 'Inter', sans-serif; background-color: #111827; color: #f3f4f6; overflow: hidden; }
+
+/* Custom Scrollbar (dark default) */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+
+/* ── View transitions ───────────────────────────────────── */
+.view-section { display: none; opacity: 0; transition: opacity 0.3s ease; }
+.view-section.active { display: block; opacity: 1; animation: fadeIn 0.3s ease forwards; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Nav active ─────────────────────────────────────────── */
+.nav-item.active { background-color: #2563eb; color: white; border-radius: 0.5rem; }
+.nav-item:hover:not(.active) { background-color: rgba(255,255,255,0.05); border-radius: 0.5rem; }
+
+/* ── Tool cards ─────────────────────────────────────────── */
+.tool-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.05); }
+.tool-card:hover { 
+    transform: translateY(-5px) scale(1.02); 
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3), 0 0 20px rgba(56,189,248,0.15); 
+    border-color: rgba(56,189,248,0.3); 
+    background: rgba(30,41,59,0.85);
+}
+
+/* ── Goal cards ─────────────────────────────────────────── */
+.goal-card { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.05); }
+.goal-card:hover { border-color: #38bdf8; transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+
+/* ── Inputs (dark default) ──────────────────────────────── */
+.input-dark {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+    color: white;
+    transition: all 0.2s;
+}
+.input-dark:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.3); }
+
+/* ── Primary button ─────────────────────────────────────── */
+.btn-primary { 
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%); 
+    color: white; 
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.btn-primary:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37,99,235,0.4), 0 0 10px rgba(56,189,248,0.4); 
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+/* ── Theme toggle button transition ─────────────────────── */
+#theme-toggle-btn { transition: all 0.25s ease; }
+
+/* ── Markdown content ───────────────────────────────────── */
+.markdown-content h1, .markdown-content h2, .markdown-content h3 { font-weight: 600; color: white; margin-top: 1rem; margin-bottom: 0.5rem; }
+.markdown-content p { margin-bottom: 1rem; color: #d1d5db; line-height: 1.6; }
+.markdown-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #d1d5db; }
+.markdown-content strong { color: white; font-weight: 600; }
+
+/* ── Calculator buttons ─────────────────────────────────── */
+.calc-btn {
+    border-radius: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.875rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    padding: 0.75rem 0; user-select: none;
+    border: 1px solid transparent;
+}
+.btn-sci  { background-color: #1c1c1e; color: #f2f2f2; border-color: #2c2c2e; }
+.btn-sci:hover { background-color: #2c2c2e; }
+.btn-sci.active { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+.btn-mem  { background-color: #1c1c1e; color: #f2f2f2; border-color: #2c2c2e; }
+.btn-mem:hover { background-color: #2c2c2e; }
+.btn-op   { background-color: #a5a5a5; color: #000; font-weight: 600; }
+.btn-op:hover { background-color: #d1d1d6; }
+.btn-div  { background-color: #3b82f6; color: white; font-weight: 600; }
+.btn-div:hover { background-color: #60a5fa; }
+.btn-num  { background-color: #333333; color: white; font-size: 1.125rem; font-weight: 500; }
+.btn-num:hover { background-color: #4d4d4d; }
+
+
+/* ═══════════════════════════════════════════════════
+   LIGHT THEME — activated by <html class="light">
+   Palette: #F2EAE0 · #B4D3D9 · #BDA6CE · #9B8EC7
+   ═══════════════════════════════════════════════════ */
+
+html.light body {
+    background-color: #F2EAE0 !important;
+    color: #1a1228 !important;
+}
+
+/* Scrollbar */
+html.light ::-webkit-scrollbar-thumb { background: #BDA6CE; }
+html.light ::-webkit-scrollbar-thumb:hover { background: #9B8EC7; }
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+html.light aside#main-sidebar {
+    background: rgba(237, 228, 220, 0.92) !important;
+    border-color: rgba(155,142,199,0.25) !important;
+    box-shadow: 2px 0 24px rgba(155,142,199,0.15) !important;
+}
+html.light .nav-item:hover:not(.active) {
+    background-color: rgba(180,211,217,0.25) !important;
+}
+html.light .nav-item.active {
+    background: linear-gradient(135deg, #9B8EC7, #BDA6CE) !important;
+    color: white !important;
+}
+html.light aside nav span, html.light aside nav button { color: #3a2d50 !important; }
+html.light aside nav p.text-gray-500 { color: #7a6b8a !important; }
+html.light aside .text-2xl { 
+    background: linear-gradient(135deg, #1a1228, #4a3060) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+html.light aside .text-primary { color: #9B8EC7 !important; }
+
+/* ── Top header ─────────────────────────────────────────── */
+html.light header#top-bar {
+    background: rgba(245, 238, 230, 0.92) !important;
+    border-color: rgba(155,142,199,0.2) !important;
+    backdrop-filter: blur(20px) !important;
+}
+html.light #top-title {
+    background: linear-gradient(135deg, #1a1228, #4a3060) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+html.light header button, html.light header [onclick] {
+    background-color: rgba(189, 166, 206, 0.2) !important;
+    border-color: rgba(155,142,199,0.3) !important;
+    color: #4a3060 !important;
+}
+html.light header button:hover { background-color: rgba(155,142,199,0.3) !important; }
+
+/* ── Main content area ──────────────────────────────────── */
+html.light #main-content { background: transparent; }
+
+/* ── Cards (bg-cardbg) ──────────────────────────────────── */
+html.light .bg-cardbg,
+html.light [class*="bg-cardbg"] {
+    background-color: #EAE0D6 !important;
+    border-color: rgba(155,142,199,0.2) !important;
+}
+html.light .bg-slate-900\/40,
+html.light .bg-slate-800\/80,
+html.light .bg-slate-800\/50,
+html.light .bg-slate-900\/50,
+html.light .bg-gray-800\/50,
+html.light .bg-gray-900 { background: rgba(224, 215, 208, 0.7) !important; }
+
+/* ── Text overrides ─────────────────────────────────────── */
+html.light .text-white    { color: #1a1228 !important; }
+html.light .text-gray-300 { color: #2d2240 !important; }
+html.light .text-gray-400 { color: #5a4d6b !important; }
+html.light .text-gray-500 { color: #7a6b8a !important; }
+html.light .text-textMuted { color: #7a6b8a !important; }
+
+/* ── Border overrides ───────────────────────────────────── */
+html.light .border-white\/5  { border-color: rgba(155,142,199,0.15) !important; }
+html.light .border-white\/10 { border-color: rgba(155,142,199,0.2)  !important; }
+html.light .border-gray-700  { border-color: rgba(155,142,199,0.3)  !important; }
+html.light .border-gray-800  { border-color: rgba(155,142,199,0.2)  !important; }
+
+/* ══════════════════════════════════════════════════════════
+   GLOBAL FORM CONTROLS — catch ALL inputs/selects/textareas
+   regardless of which Tailwind classes they use
+   ══════════════════════════════════════════════════════════ */
+html.light input:not([type="radio"]):not([type="checkbox"]):not([type="color"]),
+html.light select,
+html.light textarea {
+    background-color: rgba(242, 234, 224, 0.92) !important;
+    border-color: rgba(155,142,199,0.4) !important;
+    color: #1a1228 !important;
+}
+html.light input:not([type="radio"]):not([type="checkbox"]):focus,
+html.light select:focus,
+html.light textarea:focus {
+    border-color: #9B8EC7 !important;
+    box-shadow: 0 0 0 2px rgba(155,142,199,0.3) !important;
+    outline: none !important;
+}
+/* Ensure placeholder text is readable */
+html.light input::placeholder,
+html.light textarea::placeholder { color: rgba(90,77,107,0.65) !important; }
+
+/* Dropdown options panel */
+html.light select option,
+html.light select optgroup {
+    background-color: #EAE0D6 !important;
+    color: #1a1228 !important;
+}
+
+/* ── .input-dark (explicit class) ───────────────────────── */
+html.light .input-dark {
+    background-color: rgba(242, 234, 224, 0.92) !important;
+    border-color: rgba(155,142,199,0.4) !important;
+    color: #1a1228 !important;
+}
+html.light .input-dark:focus {
+    border-color: #9B8EC7 !important;
+    box-shadow: 0 0 0 2px rgba(155,142,199,0.3) !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   MODAL OVERRIDES — all dark panel variants used in modals
+   ══════════════════════════════════════════════════════════ */
+
+/* Modal overlay */
+html.light .fixed.inset-0.bg-black\/60,
+html.light .fixed.inset-0.bg-black\/70,
+html.light .fixed.inset-0.bg-black\/80 {
+    background-color: rgba(90, 77, 107, 0.4) !important;
+}
+
+/* Modal panel backgrounds */
+html.light .bg-gray-900,
+html.light [class*="bg-gray-900"] {
+    background-color: #EDE4D9 !important;
+    color: #1a1228 !important;
+}
+html.light .bg-slate-900,
+html.light [class*="bg-slate-900"] {
+    background-color: #EAE0D6 !important;
+    color: #1a1228 !important;
+}
+html.light .bg-slate-800,
+html.light [class*="bg-slate-800"] {
+    background-color: #E3D7CE !important;
+    color: #1a1228 !important;
+}
+html.light .bg-gray-800,
+html.light [class*="bg-gray-800"] {
+    background-color: #DDD4CA !important;
+    color: #1a1228 !important;
+}
+html.light .bg-slate-950,
+html.light [class*="bg-slate-950"] {
+    background-color: #F2EAE0 !important;
+    color: #1a1228 !important;
+}
+
+/* Fractional opacity variants (modals use these inline) */
+html.light [class*="bg-slate-900\/"],
+html.light [class*="bg-gray-900\/"],
+html.light [class*="bg-slate-800\/"],
+html.light [class*="bg-gray-800\/"],
+html.light [class*="bg-darker\/"] {
+    background-color: rgba(224, 215, 208, 0.85) !important;
+}
+
+/* ── Dropdown menus (export / action menus) ─────────────── */
+html.light .absolute.bg-gray-900,
+html.light [class*="bg-gray-900"].absolute {
+    background-color: #EDE4D9 !important;
+    border-color: rgba(155,142,199,0.25) !important;
+    box-shadow: 0 8px 24px rgba(155,142,199,0.25) !important;
+}
+html.light .absolute a:hover,
+html.light .absolute button:hover {
+    background-color: rgba(180,211,217,0.25) !important;
+}
+
+/* ── All remaining text-white in content areas ─────────── */
+html.light .text-white    { color: #1a1228 !important; }
+html.light .text-gray-200 { color: #2a1e3a !important; }
+html.light .text-gray-300 { color: #2d2240 !important; }
+html.light .text-gray-400 { color: #5a4d6b !important; }
+html.light .text-gray-500 { color: #7a6b8a !important; }
+html.light .text-textMuted { color: #7a6b8a !important; }
+
+/* ── Chat bubbles ────────────────────────────────────────── */
+html.light #chat-messages [class*="bg-slate-800"] {
+    background-color: #E3D7CE !important;
+    color: #1a1228 !important;
+    border-color: rgba(155,142,199,0.2) !important;
+}
+html.light #chat-messages [class*="bg-primary"],
+html.light #chat-messages .bg-primary {
+    background-color: #9B8EC7 !important;
+    color: white !important;
+}
+
+/* ── Inner "inner panels" inside cards (bg-gray-800/50 etc) */
+html.light .bg-gray-800\/50 { background-color: rgba(213,205,200,0.6) !important; }
+html.light .bg-slate-900\/20 { background-color: rgba(240,233,225,0.6) !important; }
+html.light .bg-slate-900\/30 { background-color: rgba(235,226,218,0.7) !important; }
+html.light .bg-slate-900\/10 { background-color: rgba(245,238,232,0.5) !important; }
+html.light .bg-slate-900\/50 { background-color: rgba(224,215,208,0.8) !important; }
+
+/* ── Progress bar background tracks ─────────────────────── */
+html.light .bg-gray-800  { background-color: rgba(213,205,200,0.8) !important; }
+html.light .bg-gray-700  { background-color: rgba(200,192,188,0.8) !important; }
+
+/* ── Primary buttons ────────────────────────────────────── */
+html.light .btn-primary {
+    background: linear-gradient(135deg, #9B8EC7 0%, #BDA6CE 100%) !important;
+    box-shadow: 0 4px 15px rgba(155,142,199,0.35) !important;
+    color: white !important;
+}
+html.light .btn-primary:hover {
+    background: linear-gradient(135deg, #8a7db6 0%, #a994bc 100%) !important;
+    box-shadow: 0 8px 20px rgba(155,142,199,0.5) !important;
+}
+
+/* ── Primary colour accents ──────────────────────────────── */
+html.light .text-primary     { color: #9B8EC7 !important; }
+html.light .bg-primary       { background-color: #9B8EC7 !important; }
+html.light .border-primary   { border-color: #9B8EC7 !important; }
+html.light .text-accent      { color: #5d9ea6 !important; }
+html.light .bg-primary\/10   { background: rgba(155,142,199,0.12) !important; }
+html.light .bg-primary\/20   { background: rgba(155,142,199,0.18) !important; }
+html.light .border-primary\/20{ border-color: rgba(155,142,199,0.25)!important; }
+
+/* Gradient text using primary */
+html.light .bg-gradient-to-r.from-white { 
+    background: linear-gradient(135deg, #1a1228, #4a3060) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* ── Animated background blobs ──────────────────────────── */
+html.light .bg-primary.rounded-full    { background-color: #BDA6CE !important; }
+html.light .bg-purple-600.rounded-full { background-color: #B4D3D9 !important; }
+html.light .bg-sky-500.rounded-full    { background-color: #9B8EC7 !important; }
+
+/* ── Tool cards ─────────────────────────────────────────── */
+html.light .tool-card {
+    background-color: #EAE0D6 !important;
+    border-color: rgba(155,142,199,0.2) !important;
+}
+html.light .tool-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(155,142,199,0.25), 0 0 20px rgba(180,211,217,0.2);
+    border-color: rgba(155,142,199,0.5) !important;
+    background: #E3D7CE !important;
+}
+
+/* ── Goal cards ─────────────────────────────────────────── */
+html.light .goal-card { border-color: rgba(155,142,199,0.2) !important; }
+html.light .goal-card:hover { border-color: #B4D3D9 !important; box-shadow: 0 8px 20px rgba(155,142,199,0.2); }
+
+/* ── Profile avatar ─────────────────────────────────────── */
+html.light [onclick="openModal('profile-modal')"] {
+    background: linear-gradient(135deg, #9B8EC7, #B4D3D9) !important;
+    border-color: #F2EAE0 !important;
+}
+
+/* ── Calculator buttons ──────────────────────────────────── */
+html.light .btn-sci { background-color: #E3D7CE !important; color: #1a1228 !important; border-color: rgba(155,142,199,0.3) !important; }
+html.light .btn-mem { background-color: #E3D7CE !important; color: #1a1228 !important; border-color: rgba(155,142,199,0.3) !important; }
+html.light .btn-div { background-color: #9B8EC7 !important; color: white !important; }
+html.light .btn-num { background-color: #DDD4CC !important; color: #1a1228 !important; }
+html.light .btn-op  { background-color: #c4bab0 !important; color: #1a1228 !important; }
+
+/* ── Nav group label ─────────────────────────────────────── */
+html.light p.text-xs.font-semibold { color: #9B8EC7 !important; }
+
+/* ── Notification badge ─────────────────────────────────── */
+html.light #notif-badge { background-color: #BDA6CE !important; }
+
+/* ── Markdown (chat) ─────────────────────────────────────── */
+html.light .markdown-content h1,
+html.light .markdown-content h2,
+html.light .markdown-content h3 { color: #1a1228 !important; }
+html.light .markdown-content p, 
+html.light .markdown-content ul  { color: #3a2d50 !important; }
+html.light .markdown-content strong { color: #1a1228 !important; }
+
+/* ── Inline stat boxes & panels ─────────────────────────── */
+html.light [class*="bg-indigo-900"],
+html.light [class*="bg-blue-900"],
+html.light [class*="bg-green-900"],
+html.light [class*="bg-red-900"] {
+    background-color: rgba(224,215,208,0.65) !important;
+}
+/* Colour-coded success/danger still needs visible tint */
+html.light .bg-red-500\/20,
+html.light [class*="bg-red-500\/"] { background: rgba(220,120,120,0.15) !important; }
+html.light .bg-green-500\/20,
+html.light [class*="bg-green-500\/"] { background: rgba(100,170,150,0.15) !important; }
+html.light .bg-blue-500\/20,
+html.light [class*="bg-blue-500\/"] { background: rgba(155,142,199,0.15) !important; }
+
+/* ── backdrop-blur panels (modals use backdrop-blur-xl) ─── */
+html.light [class*="backdrop-blur"] {
+    background-color: rgba(237, 228, 220, 0.88) !important;
+}
+/* but keep the sidebar/header overrides specific */
+html.light aside#main-sidebar {
+    background: rgba(237, 228, 220, 0.95) !important;
+}
+html.light header#top-bar {
+    background: rgba(245, 238, 230, 0.95) !important;
+}
+
