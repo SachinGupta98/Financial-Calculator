@@ -108,44 +108,53 @@ with app.app_context():
             db.session.rollback()
             print(f"  {model.__name__} commit failed: {e}")
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(User, "SELECT * FROM user", lambda r: User(**{
         'id': r['id'], 'username': r['username'], 'email': r['email'],
         'password_hash': r['password_hash'],
         'created_at': datetime.fromisoformat(r['created_at']) if r['created_at'] else datetime.now()
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(Settings, "SELECT * FROM settings", lambda r: Settings(**{
         'id': r['id'], 'user_id': r['user_id'],
         'monthly_income': r['monthly_income'], 'monthly_budget': r['monthly_budget']
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(Expense, "SELECT * FROM expense", lambda r: Expense(**{
         'id': r['id'], 'user_id': r['user_id'], 'description': r['description'],
         'amount': r['amount'], 'date': r['date'], 'category': r['category']
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(Goal, "SELECT * FROM goal", lambda r: Goal(**{
         'id': r['id'], 'user_id': r['user_id'], 'name': r['name'],
         'target_amount': r['target_amount'], 'saved_amount': r['saved_amount'],
         'target_date': r['target_date'], 'category': r['category']
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(Asset, "SELECT * FROM asset", lambda r: Asset(**{
         'id': r['id'], 'user_id': r['user_id'], 'name': r['name'],
         'asset_type': r['asset_type'], 'invested_amount': r['invested_amount'],
         'current_value': r['current_value']
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(CustomCategory, "SELECT * FROM custom_category", lambda r: CustomCategory(**{
         'id': r['id'], 'user_id': r['user_id'], 'name': r['name'],
         'emoji': r['emoji'], 'color': r['color']
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(CategoryLimit, "SELECT * FROM category_limit", lambda r: CategoryLimit(**{
         'id': r['id'], 'user_id': r['user_id'], 'category': r['category'],
         'monthly_limit': r['monthly_limit']
     }))
 
+    # pyrefly: ignore [unexpected-keyword]
     migrate_table(RecurringExpense, "SELECT * FROM recurring_expense", lambda r: RecurringExpense(**{
         'id': r['id'], 'user_id': r['user_id'], 'description': r['description'],
         'amount': r['amount'], 'category': r['category'],
@@ -153,6 +162,31 @@ with app.app_context():
     }))
 
     sqlite_conn.close()
+
+    # STEP 5: Reset PostgreSQL Sequences
+    print("\nResetting PostgreSQL auto-increment sequences...")
+    tables = [
+        'user', 'settings', 'expense', 'goal', 'asset', 
+        'custom_category', 'category_limit', 'recurring_expense'
+    ]
+    for table in tables:
+        try:
+            query = f"""
+            SELECT setval(
+                pg_get_serial_sequence('"{table}"', 'id'), 
+                COALESCE((SELECT MAX(id) FROM "{table}"), 1), 
+                max(id) IS NOT null
+            ) FROM "{table}";
+            """
+            db.session.execute(db.text(query))
+        except Exception as e:
+            db.session.rollback()
+            print(f"  Warning: Could not reset sequence for '{table}': {e}")
+    try:
+        db.session.commit()
+        print("Sequences reset successfully.")
+    except Exception as e:
+        print(f"  Warning: Error committing sequence resets: {e}")
 
     print(f"\nMigration complete!")
     print(f"  Migrated : {migrated} records")
